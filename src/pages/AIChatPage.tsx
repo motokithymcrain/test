@@ -99,15 +99,12 @@ const AIChatPage: React.FC = () => {
     };
 
     try {
-      // ------------------------------------------------
-      // ★ 修正箇所：ハードコードされたURLを使用
-      // ------------------------------------------------
       const res = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // 認証が必要な場合はAuthorizationヘッダーも必要ですが、
-          // Edge Functionを`--no-verify-jwt`でデプロイしたので不要です。
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({ message: text, profile: userProfile, userId: user?.id }),
       });
