@@ -1,14 +1,10 @@
 // このファイルは、Boltプロジェクトの構造に合わせて提供されています
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth'; // 認証フックのインポートを仮定
-import { useProfile } from '@/hooks/useProfile'; // プロフィールフックのインポートを仮定
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
-// ----------------------------------------------------
-// 【必須修正】環境変数エラーをバイパスするための修正
-// ----------------------------------------------------
-// あなたの正確なSupabase Edge FunctionのEndpoint URLに置き換えています。
-const EDGE_FUNCTION_URL = 'https://uoyarngbjzfpcvobahru.supabase.co/functions/v1/ai-consultation';
-// ----------------------------------------------------
+// Edge Function URL（環境変数から取得）
+const EDGE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-consultation`;
 
 // 型定義（プロジェクトの既存の型に合わせる必要があります）
 interface Message {
@@ -32,10 +28,42 @@ interface AIChatResponse {
 
 const AIChatPage: React.FC = () => {
   const { user } = useAuth(); // 認証ユーザー情報を取得
-  const { profile } = useProfile(); // ユーザープロフィール情報を取得
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // プロフィール情報を取得
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user!.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (data) {
+          setProfile({
+            username: data.username || undefined,
+            team_name: data.team_name || undefined,
+            position: data.position || undefined,
+            strengths: data.strengths || [],
+            weaknesses: data.weaknesses || [],
+            favorite_player: data.favorite_player || undefined,
+          });
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+
+    if (user) {
+      loadProfile();
+    }
+  }, [user]);
 
   // 初期メッセージの設定（任意）
   useEffect(() => {
@@ -71,15 +99,12 @@ const AIChatPage: React.FC = () => {
     };
 
     try {
-      // ------------------------------------------------
-      // ★ 修正箇所：ハードコードされたURLを使用
-      // ------------------------------------------------
       const res = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // 認証が必要な場合はAuthorizationヘッダーも必要ですが、
-          // Edge Functionを`--no-verify-jwt`でデプロイしたので不要です。
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({ message: text, profile: userProfile, userId: user?.id }),
       });
@@ -121,7 +146,7 @@ const AIChatPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, profile, user]); // 依存配列に`profile`と`user`を追加
+  }, [isLoading, profile, user]);
 
   // ... (JSXのレンダリング部分は既存のコードを使用)
 
