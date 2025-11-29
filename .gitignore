@@ -21,3 +21,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+setup_database.sql
+supabase/migrations/00000000000000_initial_schema.sql
