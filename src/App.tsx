@@ -12,7 +12,7 @@ import { TeamPage } from './pages/TeamPage';
 import { TrainingPage } from './pages/TrainingPage';
 import { GoalsPage } from './pages/GoalsPage';
 import { ReflectionsPage } from './pages/ReflectionsPage';
-import AIChatPage from './pages/AIChatPage';
+import { AIChatPage } from './pages/AIChatPage';
 import { PricingPage } from './pages/PricingPage';
 import { CheckoutSuccessPage } from './pages/CheckoutSuccessPage';
 import { CheckoutCancelPage } from './pages/CheckoutCancelPage';

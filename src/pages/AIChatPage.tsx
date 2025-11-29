@@ -99,15 +99,17 @@ const AIChatPage: React.FC = () => {
     };
 
     try {
-      // ------------------------------------------------
-      // ★ 修正箇所：ハードコードされたURLを使用
-      // ------------------------------------------------
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error('認証セッションが見つかりません');
+      }
+
       const res = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // 認証が必要な場合はAuthorizationヘッダーも必要ですが、
-          // Edge Functionを`--no-verify-jwt`でデプロイしたので不要です。
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ message: text, profile: userProfile, userId: user?.id }),
       });
@@ -206,4 +208,4 @@ const AIChatPage: React.FC = () => {
   );
 };
 
-export default AIChatPage;
+export { AIChatPage };
