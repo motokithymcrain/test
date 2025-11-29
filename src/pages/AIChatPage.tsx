@@ -206,4 +206,4 @@ const AIChatPage: React.FC = () => {
   );
 };
 
-export { AIChatPage };
+export default AIChatPage;
