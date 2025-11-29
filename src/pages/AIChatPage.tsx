@@ -99,21 +99,16 @@ const AIChatPage: React.FC = () => {
     };
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        throw new Error('認証セッションが見つかりません');
-      }
-
-      const res = await fetch(EDGE_FUNCTION_URL, {
+     const res = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({ message: text, profile: userProfile, userId: user?.id }),
       });
-
+      
       // エラー応答の処理
       if (!res.ok) {
         let errorDetail = res.statusText;
@@ -125,7 +120,7 @@ const AIChatPage: React.FC = () => {
         }
         throw new Error(`Edge Functionからエラー応答: HTTP ${res.status} - ${errorDetail}`);
       }
-
+      
       const data: AIChatResponse = await res.json();
       
       const aiResponseText = data.response || "AIからの応答が取得できませんでした。";
@@ -179,7 +174,7 @@ const AIChatPage: React.FC = () => {
         ))}
         {/* ローディングスピナーをここに追加することもできます */}
       </div>
-
+      
       <div className="mt-4 flex">
         <input
           type="text"
@@ -194,8 +189,8 @@ const AIChatPage: React.FC = () => {
           className="flex-grow p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:border-green-500 disabled:bg-gray-100"
           disabled={isLoading}
         />
-        <button
-          onClick={() => handleSend(input)}
+        <button  
+                    onClick={() => handleSend(input)}
           className="bg-green-600 text-white p-3 rounded-r-lg hover:bg-green-700 transition duration-150 disabled:bg-gray-400"
           disabled={isLoading || !input.trim()}
         >
@@ -208,4 +203,4 @@ const AIChatPage: React.FC = () => {
   );
 };
 
-export { AIChatPage };
+export default AIChatPage;
